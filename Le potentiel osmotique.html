@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratoire de physiologie végétale</title>
+<style>
+:root{font-family:system-ui,Arial,sans-serif;color:#20352a;background:#edf3ed}
+*{box-sizing:border-box}body{margin:0;padding:20px}.app{max-width:1250px;margin:auto}
+header,.panel{background:#fff;border:1px solid #d8e4d9;border-radius:16px;padding:16px;margin-bottom:14px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h1{font-size:clamp(22px,3vw,32px);margin:0;color:#225b38}h2{font-size:17px;margin:4px 0 12px}
+.sub,.muted{color:#65786b;font-size:13px}.eyebrow{font-size:10px;letter-spacing:.13em;font-weight:800;color:#708675}
+.status{padding:8px 12px;border-radius:30px;background:#e5f4e8;font-weight:700;font-size:13px}
+.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+label{display:block;font-size:13px;font-weight:650}label input{width:100%;accent-color:#388653;margin:12px 0 4px}
+.rangehead{display:flex;justify-content:space-between;gap:8px}
+button{border:1px solid #cfddd1;background:#f7faf7;color:#294b35;border-radius:9px;padding:9px 12px;font-weight:650;cursor:pointer}
+button:hover,button.active{background:#e0f1e4;border-color:#398452}
+.scenarios{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.scenarios button{min-height:48px}
+.progressline{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:12px;color:#65786b}
+.progress{height:7px;border-radius:9px;background:#e5ece6;overflow:hidden;flex:1}.progress>div{height:100%;width:0;background:#398452;transition:width .2s}
+.panels{display:grid;grid-template-columns:1.12fr 1fr 1fr;gap:14px}
+.panel{min-width:0;margin:0 0 14px}.panel svg{width:100%;height:auto;display:block}
+.metric{background:#f1f6f1;border-radius:9px;padding:9px;font-size:12px}
+.metric strong{display:block;font-size:19px;margin-top:3px}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.bar{height:7px;background:#dfe9e0;border-radius:8px;overflow:hidden;margin-top:7px}.bar div{height:100%;background:#4a9a68;transition:width .5s}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin-top:8px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.note{background:#f1f6f1;padding:12px;border-radius:10px;margin-top:12px;line-height:1.5;font-size:13px}
+.warning{border-left:4px solid #d49a36}.hidden{display:none}
+svg text{font-family:system-ui,Arial,sans-serif}
+.waterParticle{animation:water 3s linear infinite}.sugarParticle{animation:sugar 4s linear infinite}
+.vapor{animation:vapor 2.4s ease-out infinite}.co2{animation:co2 2.5s ease-in infinite}
+@keyframes water{from{transform:translateY(0)}to{transform:translateY(-65px)}}
+@keyframes sugar{from{transform:translateY(0)}to{transform:translateY(65px)}}
+@keyframes vapor{0%{opacity:0;transform:translateY(8px)}40%{opacity:1}100%{opacity:0;transform:translateY(-22px)}}
+@keyframes co2{0%{opacity:0;transform:translateY(-10px)}40%{opacity:1}100%{opacity:0;transform:translateY(12px)}}
+.hot{cursor:pointer}
+@media(max-width:850px){.panels{grid-template-columns:1fr 1fr}.panels .panel:first-child{grid-column:1/-1}}
+@media(max-width:600px){body{padding:10px}.controls{grid-template-columns:1fr 1fr;gap:14px}.panels{grid-template-columns:1fr}.panels .panel:first-child{grid-column:auto}.scenarios{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<main class="app">
+<header><div><div class="eyebrow">SCIENCES DE LA VIE · SIMULATION INTERACTIVE</div><h1>La plante et son équilibre hydrique</h1><div class="sub">Explore les mécanismes qui permettent à une plante de vivre.</div></div><div class="status" id="status">🟢 Plante en bonne santé</div></header>
+
+<section class="panel">
+<div class="eyebrow">01 · CONDITIONS ENVIRONNEMENTALES</div><h2>Modifier le milieu</h2>
+<div class="controls">
+<label><div class="rangehead"><span>💧 Eau disponible</span><b id="waterVal">75 %</b></div><input id="water" type="range" min="0" max="100" value="75"><div class="muted">Sol sec → sol saturé</div></label>
+<label><div class="rangehead"><span>🌡️ Température</span><b id="tempVal">24 °C</b></div><input id="temp" type="range" min="0" max="45" value="24"><div class="muted">0 °C → 45 °C</div></label>
+<label><div class="rangehead"><span>🧂 Salinité</span><b id="saltVal">1 g/L</b></div><input id="salt" type="range" min="0" max="20" value="1"><div class="muted">Eau douce → très salée</div></label>
+<label><div class="rangehead"><span>☀️ Lumière</span><b id="lightVal">80 %</b></div><input id="light" type="range" min="0" max="100" value="80"><div class="muted">Obscurité → forte lumière</div></label>
+</div>
+</section>
+
+<section class="panel">
+<div class="eyebrow">02 · EXPÉRIENCES GUIDÉES</div><h2>Choisir un scénario</h2>
+<div class="scenarios">
+<button data-scenario="ideal">🌱 Situation idéale</button><button data-scenario="drought">🏜️ Sécheresse</button><button data-scenario="heat">🔥 Canicule</button><button data-scenario="salt">🧂 Sol salé</button><button data-scenario="flood">🌊 Inondation</button>
+</div>
+<div class="progressline"><span id="phase">Simulation libre</span><div class="progress"><div id="progress"></div></div><span id="elapsed">0 / 24 s</span><button id="pause">Ⅱ Pause</button><button id="reset">↺ Réinitialiser</button></div>
+</section>
+
+<div class="panels">
+<section class="panel">
+<div class="eyebrow">03 · ORGANISME ENTIER</div><h2>La plante</h2><div class="muted">Transports internes et état général</div>
+<svg viewBox="0 0 300 330" role="img" aria-label="Plante avec racines, tige et feuilles">
+<defs><linearGradient id="soil" x2="0" y2="1"><stop stop-color="#a98a5d"/><stop offset="1" stop-color="#63472f"/></linearGradient><linearGradient id="leaf" x2="0" y2="1"><stop stop-color="#75b85e"/><stop offset="1" stop-color="#28663a"/></linearGradient></defs>
+<rect y="207" width="300" height="123" fill="url(#soil)"/><path d="M0 207Q70 200 140 207T300 207" fill="none" stroke="#c6a777" stroke-width="3"/>
+<g fill="none" stroke="#d2b17c" stroke-linecap="round"><path d="M150 207Q143 240 128 260L110 307M150 215Q160 246 175 265L190 312M143 233Q120 246 102 252L82 278M160 239Q185 244 204 251L229 277M128 261L139 291M175 264L162 305" stroke-width="3"/></g>
+<g id="stem"><path d="M150 210Q148 145 150 48" stroke="#397d48" stroke-width="9" fill="none"/><path d="M150 157L98 122M150 125L206 89M150 93L116 56" stroke="#397d48" stroke-width="4" fill="none"/>
+<g id="leaves" fill="url(#leaf)" stroke="#245e36" stroke-width="1.5"><path d="M145 160Q112 100 54 116Q61 160 145 160Z"/><path d="M155 130Q182 63 246 76Q239 123 155 130Z"/><path d="M147 99Q102 36 83 31Q80 91 147 99Z"/><path d="M155 174Q191 131 240 148Q219 181 155 174Z"/></g>
+<g stroke="#b1d28d" fill="none"><path d="M145 159L65 119M155 129L239 79M147 98L85 34M155 173L235 149"/></g></g>
+<g id="waterParticles" fill="#65d4ff"><circle class="waterParticle" cx="149" cy="198" r="3"/><circle class="waterParticle" cx="154" cy="178" r="3" style="animation-delay:-.8s"/><circle class="waterParticle" cx="148" cy="158" r="3" style="animation-delay:-1.5s"/><circle class="waterParticle" cx="152" cy="137" r="3" style="animation-delay:-2s"/><circle class="waterParticle" cx="150" cy="117" r="3" style="animation-delay:-.4s"/></g>
+<g id="sugarParticles" fill="#ffd34f"><circle class="sugarParticle" cx="145" cy="145" r="3"/><circle class="sugarParticle" cx="154" cy="148" r="3" style="animation-delay:-1s"/><circle class="sugarParticle" cx="149" cy="165" r="3" style="animation-delay:-2s"/><circle class="sugarParticle" cx="153" cy="183" r="3" style="animation-delay:-.7s"/></g>
+<g fill="white" font-size="10" font-weight="bold"><text x="9" y="225">SOL</text><text x="9" y="242">H₂O ↑</text><text x="197" y="194" fill="#ffe18a">Sucres ↓</text></g>
+<g class="hot" data-topic="racine"><text x="194" y="292" fill="white" font-size="11">Racines ⓘ</text><rect x="190" y="276" width="100" height="23" fill="transparent"/></g>
+<g class="hot" data-topic="xyleme"><text x="177" y="119" fill="#bceaff" font-size="10">Xylème ⓘ</text><rect x="130" y="110" width="110" height="20" fill="transparent"/></g>
+<g class="hot" data-topic="phloeme"><text x="177" y="137" fill="#ffe18a" font-size="10">Phloème ⓘ</text><rect x="130" y="130" width="110" height="20" fill="transparent"/></g>
+</svg>
+<div class="legend"><span><i class="dot" style="background:#55cafa"></i>Eau · xylème</span><span><i class="dot" style="background:#f7c94a"></i>Sucres · phloème</span></div>
+<div class="metrics"><div class="metric">Flux d'eau<strong id="waterFlow">82 %</strong></div><div class="metric">Production de sucres<strong id="sugarFlow">86 %</strong></div></div>
+</section>
+
+<section class="panel">
+<div class="eyebrow">04 · ÉCHANGES GAZEUX</div><h2>La feuille agrandie</h2><div class="muted">Photosynthèse et transpiration</div>
+<svg viewBox="0 0 300 300" role="img" aria-label="Feuille agrandie et stomate">
+<defs><linearGradient id="blade" x2="0" y2="1"><stop stop-color="#76ba61"/><stop offset="1" stop-color="#24633a"/></linearGradient></defs>
+<path d="M150 265Q-10 135 150 28Q310 135 150 265Z" fill="url(#blade)" stroke="#a2d38b" stroke-width="2"/>
+<path d="M150 265Q148 148 150 29M150 183L58 103M150 152L247 89M150 220L54 163M150 209L253 144" fill="none" stroke="#b3d992" stroke-width="2"/>
+<g class="hot" data-topic="stomate"><ellipse cx="150" cy="156" rx="38" ry="24" fill="#174e31" stroke="#c1dfa4" stroke-width="3"/><path id="guardL" d="M146 134Q118 139 122 158Q124 179 146 178Q139 156 146 134Z" fill="#91bd71" stroke="#d0e4a8"/><path id="guardR" d="M154 134Q182 139 178 158Q176 179 154 178Q161 156 154 134Z" fill="#91bd71" stroke="#d0e4a8"/><ellipse id="gap" cx="150" cy="156" rx="12" ry="14" fill="#142b20"/></g>
+<g id="gasFlow"><g class="co2" fill="#d6f2ff"><circle cx="150" cy="77" r="5"/><circle cx="139" cy="89" r="3"/></g><g class="vapor" fill="#e3f7ff"><circle cx="150" cy="222" r="4"/><circle cx="164" cy="230" r="3"/></g></g>
+<g font-size="11" font-weight="bold"><text x="8" y="61" fill="#d6f2ff">CO₂ ↓</text><text x="177" y="248" fill="#e3f7ff">H₂O ↑</text><text x="9" y="286" fill="white">Stomate ⓘ</text></g>
+<rect x="206" y="16" width="84" height="31" rx="7" fill="#164d2c"/><text x="248" y="29" fill="white" font-size="9" text-anchor="middle">Production</text><text x="248" y="41" fill="#ffe18a" font-size="11" text-anchor="middle">Sucres</text>
+</svg>
+<div class="metric"><div class="rangehead"><span>Ouverture des stomates</span><b id="stomaVal">90 %</b></div><div class="bar"><div id="stomaBar" style="width:90%"></div></div></div>
+<div class="metrics"><div class="metric">Transpiration<strong id="transpVal">Normale</strong></div><div class="metric">Photosynthèse<strong id="photoVal">Élevée</strong></div></div>
+</section>
+
+<section class="panel">
+<div class="eyebrow">05 · ÉCHELLE CELLULAIRE</div><h2>La cellule végétale</h2><div class="muted">Turgescence et plasmolyse</div>
+<svg viewBox="0 0 300 300" role="img" aria-label="Cellule végétale avec paroi, membrane et vacuole">
+<rect x="24" y="23" width="252" height="248" rx="39" fill="#b8a36c" fill-opacity=".18" stroke="#a98d50" stroke-width="10"/>
+<rect id="membrane" x="34" y="33" width="232" height="228" rx="31" fill="none" stroke="#5dba81" stroke-width="4"/>
+<rect id="vacuole" x="48" y="47" width="204" height="200" rx="29" fill="#7bbfe4" fill-opacity=".5" stroke="#5aa7d0" stroke-width="2"/>
+<ellipse cx="74" cy="75" rx="12" ry="9" fill="#9bcf79" stroke="#4c9559" stroke-width="2"/><ellipse cx="225" cy="218" rx="11" ry="8" fill="#9bcf79" stroke="#4c9559" stroke-width="2"/>
+<g font-size="10" font-weight="bold" fill="#294536"><text x="3" y="90">Paroi</text><text x="205" y="113">Membrane</text><text x="150" y="190" text-anchor="middle">Vacuole</text></g>
+<text id="cellLabel" x="150" y="290" text-anchor="middle" fill="#65786b" font-size="11" font-weight="bold">Cellule turgescente</text>
+</svg>
+<div class="metric"><div class="rangehead"><span>Pression de turgescence</span><b id="turgorVal">95 %</b></div><div class="bar"><div id="turgorBar" style="width:95%"></div></div></div>
+<p class="muted" id="cellDescription">La vacuole est remplie d'eau et pousse la membrane contre la paroi.</p>
+</section>
+</div>
+
+<section class="panel">
+<div class="eyebrow">06 · OBSERVATIONS SCIENTIFIQUES</div><h2>Ce qui se passe dans la plante</h2>
+<div class="metrics">
+<div class="metric">Absorption racinaire<strong id="absorbVal">Élevée</strong><div class="bar"><div id="absorbBar" style="width:85%"></div></div></div>
+<div class="metric">État des feuilles<strong id="leafVal">Saines</strong><div class="bar"><div id="leafBar" style="width:95%"></div></div></div>
+</div>
+<div id="osmoticNotice" class="note warning hidden"><b>⚠️ Sécheresse physiologique : sol salé</b><p>Le sol contient de l'eau mais la plante ne peut plus l'absorber correctement à cause du potentiel osmotique. L'eau peut même sortir des cellules racinaires vers le milieu plus concentré.</p></div>
+<div id="floodNotice" class="note warning hidden"><b>⚠️ Asphyxie racinaire</b><p>L'eau remplit les espaces du sol et limite la diffusion de l'oxygène. Les racines respirent moins bien et leur capacité d'absorption diminue.</p></div>
+<div class="note"><b id="explainTitle">🌱 Une plante en équilibre</b><p id="explainText">Les racines absorbent l'eau, qui monte dans le xylème. Les feuilles utilisent la lumière et le CO₂ pour fabriquer des sucres, distribués par le phloème vers les organes de croissance et les racines.</p></div>
+</section>
+
+<section class="panel">
+<div class="eyebrow">07 · EXPLORER LES ORGANES</div><h2>Toucher une structure pour comprendre</h2>
+<div class="scenarios" style="grid-template-columns:repeat(auto-fit,minmax(105px,1fr))">
+<button data-topic="racine">🌱 Racine</button><button data-topic="xyleme">💧 Xylème</button><button data-topic="phloeme">🍯 Phloème</button><button data-topic="stomate">🍃 Stomate</button><button data-topic="cellule">🔬 Cellule</button>
+</div>
+<div id="topicInfo" class="note" aria-live="polite"><b>À toi d'explorer !</b><p>Sélectionne une structure pour découvrir son rôle dans la circulation de l'eau et le fonctionnement de la plante.</p></div>
+</section>
+<p class="muted" style="text-align:center">Modèle pédagogique qualitatif : les valeurs sont des indices relatifs et non des mesures physiologiques réelles.</p>
+</main>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id),keys=['water','temp','salt','light'];
+const initial={water:75,temp:24,salt:1,light:80};let v={...initial},scenario=null,raf=null,start=0,paused=false,pauseTime=0,from=null,to=null;
+const scenarios={ideal:{water:78,temp:24,salt:0,light:85,name:'Situation idéale'},drought:{water:8,temp:26,salt:1,light:75,name:'Sécheresse'},heat:{water:35,temp:43,salt:0,light:95,name:'Canicule'},salt:{water:75,temp:25,salt:16,light:80,name:'Sol salé'},flood:{water:100,temp:23,salt:0,light:65,name:'Inondation'}};
+const clamp=x=>Math.max(0,Math.min(100,x));
+const info={racine:['Les racines','Les racines absorbent l’eau et les ions minéraux du sol, notamment grâce aux poils absorbants. Elles ont également besoin d’oxygène pour respirer.'],xyleme:['Le xylème','Le xylème transporte la sève brute, composée principalement d’eau et de sels minéraux, des racines vers les feuilles. La transpiration foliaire contribue à créer une aspiration qui entraîne cette montée.'],phloeme:['Le phloème','Le phloème distribue la sève élaborée, riche en sucres issus de la photosynthèse. Elle circule des feuilles vers les organes consommateurs ou de réserve, comme les racines.'],stomate:['Le stomate','Le stomate est un pore entouré de deux cellules de garde. Son ouverture permet l’entrée du CO₂ nécessaire à la photosynthèse, mais entraîne aussi une perte de vapeur d’eau.'],cellule:['La cellule végétale','La paroi apporte une résistance mécanique. La membrane plasmique contrôle les échanges. La vacuole stocke l’eau et contribue à la pression de turgescence qui maintient les tissus fermes.']} ;
+function model(){
+let flood=v.water>90,salt=clamp((v.salt-2)*5.2),heat=clamp((Math.abs(v.temp-24)-5)*3.2),dry=clamp((65-v.water)*1.65),hyp=flood?clamp((v.water-90)*5):0;
+let effective=clamp(v.water-salt*.9-hyp*.5),stress=clamp(dry*.55+salt*.75+heat*.55+hyp*.8),stoma=clamp(95-stress*.78);
+if(v.temp>34)stoma=Math.min(stoma,clamp(92-(v.temp-34)*7));if(v.light<8)stoma=Math.min(stoma,35);
+let absorb=clamp(effective*(1-hyp/110)*(1-salt/140)),flow=clamp(absorb*(.5+stoma/200)),transp=clamp(stoma*(v.temp>30?1.1:1)*(v.light/80)),tempFactor=clamp(100-Math.max(0,v.temp-28)*5-Math.max(0,8-v.temp)*7),photo=clamp(v.light*stoma*absorb*tempFactor/10000),turgor=clamp(100-stress*.95-(flood?10:0)),health=clamp(100-stress*.72-hyp*.25);
+return{flood,salt,heat,hyp,effective,stress,stoma,absorb,flow,transp,photo,turgor,health};
+}
+function update(){
+let m=model();
+keys.forEach(k=>$(k+'Val').textContent=k==='temp'?v[k]+' °C':k==='salt'?v[k]+' g/L':Math.round(v[k])+' %');
+$('status').textContent=m.turgor<35||m.health<20?'🔴 Flétrissement sévère':m.turgor<75||m.health<70?'🟠 Plante en stress':'🟢 Plante en bonne santé';
+$('waterFlow').textContent=Math.round(m.flow)+' %';$('sugarFlow').textContent=Math.round(m.photo)+' %';
+$('stomaVal').textContent=Math.round(m.stoma)+' %';$('stomaBar').style.width=m.stoma+'%';
+$('transpVal').textContent=m.transp>65?'Active':m.transp>25?'Modérée':'Faible';
+$('photoVal').textContent=m.photo>65?'Élevée':m.photo>25?'Réduite':'Très faible';
+$('turgorVal').textContent=Math.round(m.turgor)+' %';$('turgorBar').style.width=m.turgor+'%';
+$('absorbVal').textContent=m.flood?'Ralentie':m.effective>60?'Élevée':m.effective>25?'Réduite':'Très faible';
+$('absorbBar').style.width=(m.flood?Math.max(5,m.effective*.35):m.effective)+'%';
+$('leafVal').textContent=m.health>75?'Saines':m.health>40?'Flétries':'Très abîmées';$('leafBar').style.width=m.health+'%';
+$('leaves').style.opacity=.55+m.health/225;$('leaves').style.transformOrigin='150px 150px';$('leaves').style.transform=`rotate(${(100-m.turgor)*.17}deg)`;
+$('waterParticles').style.opacity=.08+m.flow/110;$('waterParticles').style.animationDuration=(5-m.flow*.038)+'s';$('sugarParticles').style.opacity=.08+m.photo/100;$('sugarParticles').style.animationDuration=(6-m.photo*.035)+'s';$('gasFlow').style.opacity=.1+m.stoma/115;
+$('guardL').setAttribute('transform',`translate(${(1-m.stoma/100)*11} 0)`);$('guardR').setAttribute('transform',`translate(${-(1-m.stoma/100)*11} 0)`);$('gap').setAttribute('rx',1+11*m.stoma/100);
+let size=clamp(40+m.turgor*.6),inset=(100-size)*.75;
+$('vacuole').setAttribute('x',24+inset);$('vacuole').setAttribute('y',23+inset);$('vacuole').setAttribute('width',252-2*inset);$('vacuole').setAttribute('height',248-2*inset);$('vacuole').setAttribute('rx',Math.max(8,39-inset*.5));$('vacuole').setAttribute('fill-opacity',.25+m.turgor*.004);
+let mi=m.turgor<25?inset+13:10;$('membrane').setAttribute('x',24+mi);$('membrane').setAttribute('y',23+mi);$('membrane').setAttribute('width',252-2*mi);$('membrane').setAttribute('height',248-2*mi);$('membrane').setAttribute('rx',Math.max(8,39-mi*.5));
+$('cellLabel').textContent=m.turgor>75?'Cellule turgescente':m.turgor>40?'Perte de turgescence':m.turgor>20?'Cellule plasmolysée':'Plasmolyse avancée';
+$('cellDescription').textContent=m.turgor>75?'La vacuole est remplie d’eau et pousse la membrane contre la paroi.':m.turgor>40?'La vacuole perd de l’eau. La pression interne diminue et la cellule devient moins ferme.':m.turgor>20?'La vacuole est fortement contractée. La membrane commence à se décoller de la paroi.':'La membrane s’est nettement décollée de la paroi : c’est la plasmolyse.';
+$('osmoticNotice').classList.toggle('hidden',v.salt<5);$('floodNotice').classList.toggle('hidden',!m.flood);
+if(v.salt>=5){$('explainTitle').textContent='🧂 Le problème du potentiel osmotique';$('explainText').textContent='Le sol contient de l’eau mais la plante ne peut plus l’absorber correctement à cause du potentiel osmotique. La concentration en sels diminue le potentiel hydrique du sol et l’eau peut sortir des cellules racinaires.'}
+else if(m.flood){$('explainTitle').textContent='🌊 Des racines asphyxiées';$('explainText').textContent='Les pores du sol sont saturés en eau. Le manque d’oxygène perturbe la respiration des racines, qui absorbent moins bien l’eau et les minéraux.'}
+else if(m.turgor<30){$('explainTitle').textContent='🏜️ Flétrissement important';$('explainText').textContent='La perte d’eau entraîne une chute de turgescence. Les feuilles deviennent molles et retombent. Les stomates se ferment pour limiter les pertes, ce qui réduit aussi la photosynthèse.'}
+else if(m.turgor<75){$('explainTitle').textContent='⚠️ Stress hydrique progressif';$('explainText').textContent='La plante réduit l’ouverture de ses stomates pour économiser l’eau. La transpiration et l’entrée du CO₂ diminuent. La production de sucres ralentit et les cellules perdent une partie de leur turgescence.'}
+else if(v.temp>34){$('explainTitle').textContent='🔥 Stress thermique';$('explainText').textContent='Une température très élevée augmente la demande évaporative et peut perturber la photosynthèse. La plante ferme progressivement ses stomates pour limiter la déshydratation.'}
+else if(v.light<15){$('explainTitle').textContent='🌑 Lumière insuffisante';$('explainText').textContent='Sans lumière suffisante, la photosynthèse ralentit et la production de sucres diminue. La plante peut conserver son eau mais sa croissance devient limitée.'}
+else{$('explainTitle').textContent='🌱 Une plante en équilibre';$('explainText').textContent='Les racines absorbent l’eau, qui monte dans le xylème. Les feuilles utilisent la lumière et le CO₂ pour fabriquer des sucres, distribués par le phloème vers les organes de croissance et les racines.'}
+}
+function stop(){scenario=null;paused=false;if(raf)cancelAnimationFrame(raf);raf=null;from=to=null;$('progress').style.width='0%';$('elapsed').textContent='0 / 24 s';$('phase').textContent='Simulation libre';document.querySelectorAll('[data-scenario]').forEach(b=>b.classList.remove('active'))}
+keys.forEach(k=>$(k).addEventListener('input',()=>{v[k]=+$(k).value;stop();update()}));
+document.querySelectorAll('[data-scenario]').forEach(b=>b.addEventListener('click',()=>run(b.dataset.scenario)));
+function run(key){if(raf)cancelAnimationFrame(raf);scenario=key;from={...v};to=scenarios[key];start=performance.now();paused=false;document.querySelectorAll('[data-scenario]').forEach(b=>b.classList.toggle('active',b.dataset.scenario===key));$('pause').textContent='Ⅱ Pause';
+function frame(now){if(!scenario)return;if(paused){raf=requestAnimationFrame(frame);return}let p=clamp((now-start)/24000)/100,s=p*p*(3-2*p);keys.forEach(k=>v[k]=from[k]+(to[k]-from[k])*s);update();$('progress').style.width=(p*100)+'%';$('elapsed').textContent=Math.floor(p*24)+' / 24 s';$('phase').textContent=['Installation des conditions','Réponse des stomates','Modification des flux','Évolution des cellules'][Math.min(3,Math.floor(p*4))];if(p>=1){scenario=null;raf=null;$('phase').textContent='État final observé';$('pause').textContent='Ⅱ Pause';return}raf=requestAnimationFrame(frame)}
+raf=requestAnimationFrame(frame)}
+$('pause').addEventListener('click',()=>{if(!scenario)return;if(!paused){paused=true;pauseTime=performance.now();$('pause').textContent='▶ Reprendre';$('phase').textContent='Expérience en pause'}else{start+=performance.now()-pauseTime;paused=false;$('pause').textContent='Ⅱ Pause'}});
+$('reset').addEventListener('click',()=>{stop();v={...initial};keys.forEach(k=>$(k).value=v[k]);update()});
+function showTopic(key){let d=info[key];if(!d)return;$('topicInfo').innerHTML='';let b=document.createElement('b'),p=document.createElement('p');b.textContent=d[0];p.textContent=d[1];p.className='muted';p.style.marginBottom='0';$('topicInfo').append(b,p)}
+document.querySelectorAll('[data-topic]').forEach(el=>el.addEventListener('click',()=>showTopic(el.dataset.topic)));
+update();
+})();
+</script>
+</body>
+</html>
