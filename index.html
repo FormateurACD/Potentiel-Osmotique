@@ -108,14 +108,14 @@ svg text{font-family:system-ui,Arial,sans-serif}
 <marker id="waterArrowIn" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="#1686c2"/></marker>
 <marker id="waterArrowOut" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="#d97736"/></marker>
 </defs>
-<g id="waterFlowArrows" fill="none" stroke-width="3" stroke-linecap="round">
-<path id="waterArrowLeft" d="M4 160 L39 160" stroke="#1686c2" marker-end="url(#waterArrowIn)"/>
-<path id="waterArrowRight" d="M296 160 L261 160" stroke="#1686c2" marker-end="url(#waterArrowIn)"/>
-</g>
 <rect x="24" y="23" width="252" height="248" rx="39" fill="#b8a36c" fill-opacity=".18" stroke="#a98d50" stroke-width="10"/>
 <rect id="membrane" x="34" y="33" width="232" height="228" rx="31" fill="none" stroke="#5dba81" stroke-width="4"/>
 <rect id="vacuole" x="48" y="47" width="204" height="200" rx="29" fill="#7bbfe4" fill-opacity=".5" stroke="#5aa7d0" stroke-width="2"/>
 <ellipse cx="74" cy="75" rx="12" ry="9" fill="#9bcf79" stroke="#4c9559" stroke-width="2"/><ellipse cx="225" cy="218" rx="11" ry="8" fill="#9bcf79" stroke="#4c9559" stroke-width="2"/>
+<g id="waterFlowArrows" fill="none" stroke-width="4" stroke-linecap="round" pointer-events="none">
+<path id="waterArrowLeft" d="M2 160 L40 160" stroke="#1686c2" marker-end="url(#waterArrowIn)"/>
+<path id="waterArrowRight" d="M298 160 L260 160" stroke="#1686c2" marker-end="url(#waterArrowIn)"/>
+</g>
 <g font-size="10" font-weight="bold" fill="#294536"><text x="3" y="90">Paroi</text><text x="205" y="113">Membrane</text><text x="150" y="190" text-anchor="middle">Vacuole</text></g>
 <text id="cellLabel" x="150" y="290" text-anchor="middle" fill="#65786b" font-size="11" font-weight="bold">Cellule turgescente</text>
 </svg>
@@ -232,7 +232,9 @@ raf=requestAnimationFrame(frame)}
 $('pause').addEventListener('click',()=>{if(!scenario)return;if(!paused){paused=true;pauseTime=performance.now();$('pause').textContent='▶ Reprendre';$('phase').textContent='Expérience en pause'}else{start+=performance.now()-pauseTime;paused=false;$('pause').textContent='Ⅱ Pause'}});
 $('reset').addEventListener('click',()=>{stop();v={...initial};keys.forEach(k=>$(k).value=v[k]);update()});
 function showTopic(key){let d=info[key];if(!d)return;$('topicInfo').innerHTML='';let b=document.createElement('b'),p=document.createElement('p');b.textContent=d[0];p.textContent=d[1];p.className='muted';p.style.marginBottom='0';$('topicInfo').append(b,p)}
-document.querySelectorAll('[data-topic]').forEach(el=>{el.addEventListener('click',()=>showTopic(el.dataset.topic));el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showTopic(el.dataset.topic)}})});
+document.querySelectorAll('[data-topic]').forEach(el=>{el.style.cursor='pointer';el.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();showTopic(el.dataset.topic)});el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showTopic(el.dataset.topic)}})});
+document.querySelectorAll('svg [data-topic]').forEach(el=>{el.setAttribute('pointer-events','all');el.querySelectorAll('*').forEach(child=>child.setAttribute('pointer-events','all'))});
+
 update();
 })();
 </script>
