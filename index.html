@@ -121,7 +121,8 @@ svg text{font-family:system-ui,Arial,sans-serif}
 <div class="metric">Absorption racinaire<strong id="absorbVal">Élevée</strong><div class="bar"><div id="absorbBar" style="width:85%"></div></div></div>
 <div class="metric">État des feuilles<strong id="leafVal">Saines</strong><div class="bar"><div id="leafBar" style="width:95%"></div></div></div>
 </div>
-<div id="osmoticNotice" class="note warning hidden"><b>⚠️ Sécheresse physiologique : sol salé</b><p>Les sels dissous rendent le potentiel osmotique du sol plus négatif et abaissent son potentiel hydrique. L'eau se déplace spontanément d'un milieu au potentiel hydrique le moins négatif vers un milieu au potentiel hydrique le plus négatif. Si la solution extérieure est suffisamment concentrée, les cellules racinaires perdent de l'eau.</p></div>
+<div class="metrics"><div class="metric">Potentiel osmotique estimé<strong id="psiVal">−0,00 MPa</strong><div class="muted">Estimation idéale pour une solution de NaCl à la température indiquée</div></div><div class="metric">Contrainte dominante<strong id="stressType">Aucune</strong><div class="muted">Interprétation simplifiée du scénario</div></div></div>
+<div id="osmoticNotice" class="note warning hidden"><b>⚠️ Contrainte osmotique : sol salé</b><p>Les sels dissous rendent le potentiel osmotique de la solution du sol plus négatif. Le potentiel hydrique du sol diminue : l’absorption d’eau par les racines devient plus difficile. Si le milieu extérieur est suffisamment hypertonique, les cellules peuvent perdre de l’eau et subir une plasmolyse.</p></div>
 <div id="floodNotice" class="note warning hidden"><b>⚠️ Asphyxie racinaire</b><p>L'eau remplit les espaces du sol et limite la diffusion de l'oxygène. Les racines respirent moins bien et leur capacité d'absorption diminue.</p></div>
 <div class="note"><b id="explainTitle">🌱 Une plante en équilibre</b><p id="explainText">Les racines absorbent l'eau, qui monte dans le xylème. Les feuilles utilisent la lumière et le CO₂ pour fabriquer des sucres, distribués par le phloème vers les organes de croissance et les racines.</p></div>
 </section>
@@ -148,11 +149,14 @@ let flood=v.water>90,salt=clamp((v.salt-2)*5.2),heat=clamp((Math.abs(v.temp-24)-
 let effective=clamp(v.water-salt*.9-hyp*.5),stress=clamp(dry*.55+salt*.75+heat*.55+hyp*.8),stoma=clamp(95-stress*.78);
 if(v.temp>34)stoma=Math.min(stoma,clamp(92-(v.temp-34)*7));if(v.light<8)stoma=Math.min(stoma,35);
 let absorb=clamp(effective*(1-hyp/110)*(1-salt/140)),flow=clamp(absorb*(.5+stoma/200)),transp=clamp(stoma*(v.temp>30?1.1:1)*(v.light/80)),tempFactor=clamp(100-Math.max(0,v.temp-28)*5-Math.max(0,8-v.temp)*7),photo=clamp(v.light*stoma*absorb*tempFactor/10000),turgor=clamp(100-stress*.95-(flood?10:0)),health=clamp(100-stress*.72-hyp*.25);
-return{flood,salt,heat,hyp,effective,stress,stoma,absorb,flow,transp,photo,turgor,health};
+let plasmolysis=v.salt>=8&&turgor<48,psi=-2*(v.salt/58.44)*0.008314*(v.temp+273.15);
+return{flood,salt,heat,hyp,effective,stress,stoma,absorb,flow,transp,photo,turgor,health,plasmolysis,psi};
 }
 function update(){
 let m=model();
-keys.forEach(k=>$(k+'Val').textContent=k==='temp'?v[k]+' °C':k==='salt'?v[k]+' g/L':Math.round(v[k])+' %');
+keys.forEach(k=>{$(k+'Val').textContent=k==='temp'?Math.round(v[k])+' °C':k==='salt'?v[k].toFixed(1).replace('.',',')+' g/L':Math.round(v[k])+' %';$(k).value=v[k]});
+$('psiVal').textContent=(m.psi<0?'−':'')+Math.abs(m.psi).toFixed(2).replace('.',',')+' MPa';
+$('stressType').textContent=m.flood?'Hypoxie racinaire':v.salt>=5?'Contrainte osmotique':v.water<35?'Déficit hydrique':v.temp>34?'Stress thermique':v.light<15?'Lumière limitante':'Faible';
 $('status').textContent=m.turgor<35||m.health<20?'🔴 Flétrissement sévère':m.turgor<75||m.health<70?'🟠 Plante en stress':'🟢 Plante en bonne santé';
 $('waterFlow').textContent=Math.round(m.flow)+' %';$('sugarFlow').textContent=Math.round(m.photo)+' %';
 $('stomaVal').textContent=Math.round(m.stoma)+' %';$('stomaBar').style.width=m.stoma+'%';
@@ -167,9 +171,9 @@ $('waterParticles').style.opacity=.08+m.flow/110;$('waterParticles').style.anima
 $('guardL').setAttribute('transform',`translate(${(1-m.stoma/100)*11} 0)`);$('guardR').setAttribute('transform',`translate(${-(1-m.stoma/100)*11} 0)`);$('gap').setAttribute('rx',1+11*m.stoma/100);
 let size=clamp(40+m.turgor*.6),inset=(100-size)*.75;
 $('vacuole').setAttribute('x',24+inset);$('vacuole').setAttribute('y',23+inset);$('vacuole').setAttribute('width',252-2*inset);$('vacuole').setAttribute('height',248-2*inset);$('vacuole').setAttribute('rx',Math.max(8,39-inset*.5));$('vacuole').setAttribute('fill-opacity',.25+m.turgor*.004);
-let mi=m.turgor<25?inset+13:10;$('membrane').setAttribute('x',24+mi);$('membrane').setAttribute('y',23+mi);$('membrane').setAttribute('width',252-2*mi);$('membrane').setAttribute('height',248-2*mi);$('membrane').setAttribute('rx',Math.max(8,39-mi*.5));
-$('cellLabel').textContent=m.turgor>75?'Cellule turgescente':m.turgor>40?'Perte de turgescence':m.turgor>20?'Cellule plasmolysée':'Plasmolyse avancée';
-$('cellDescription').textContent=m.turgor>75?'La vacuole est remplie d’eau et pousse la membrane contre la paroi.':m.turgor>40?'La vacuole perd de l’eau. La pression interne diminue et la cellule devient moins ferme.':m.turgor>20?'La vacuole a perdu beaucoup d’eau. En milieu extérieur hypertonique, la membrane plasmique peut se décoller de la paroi : c’est la plasmolyse.':'La membrane plasmique s’est nettement décollée de la paroi après une sortie d’eau vers un milieu extérieur hypertonique : c’est la plasmolyse.';
+let mi=m.plasmolysis?Math.min(48,inset+18):10;$('membrane').setAttribute('x',24+mi);$('membrane').setAttribute('y',23+mi);$('membrane').setAttribute('width',252-2*mi);$('membrane').setAttribute('height',248-2*mi);$('membrane').setAttribute('rx',Math.max(8,39-mi*.5));
+$('cellLabel').textContent=m.plasmolysis?(m.turgor>20?'Plasmolyse':'Plasmolyse marquée'):m.turgor>75?'Cellule turgescente':m.turgor>40?'Perte de turgescence':'Cellule flasque';
+$('cellDescription').textContent=m.plasmolysis?'Le milieu extérieur est fortement concentré : la cellule perd de l’eau et la membrane plasmique se décolle de la paroi.':m.turgor>75?'La vacuole est remplie d’eau et pousse la membrane contre la paroi.':m.turgor>40?'La vacuole perd de l’eau. La pression de turgescence diminue : la cellule devient moins ferme, sans plasmolyse représentée.':'La cellule a perdu une grande partie de sa turgescence. Le flétrissement ne signifie pas nécessairement qu’une plasmolyse a lieu.';
 $('osmoticNotice').classList.toggle('hidden',v.salt<5);$('floodNotice').classList.toggle('hidden',!m.flood);
 if(v.salt>=5){$('explainTitle').textContent='🧂 Le problème du potentiel osmotique';$('explainText').textContent='Les sels dissous rendent le potentiel osmotique du sol plus négatif et abaissent son potentiel hydrique. L’eau se déplace d’un potentiel hydrique moins négatif vers un potentiel hydrique plus négatif. Si la solution extérieure est suffisamment concentrée, les cellules racinaires perdent de l’eau.'}
 else if(m.flood){$('explainTitle').textContent='🌊 Des racines asphyxiées';$('explainText').textContent='Les pores du sol sont saturés en eau. Le manque d’oxygène perturbe la respiration des racines, qui absorbent moins bien l’eau et les minéraux.'}
@@ -182,8 +186,8 @@ else{$('explainTitle').textContent='🌱 Une plante en équilibre';$('explainTex
 function stop(){scenario=null;paused=false;if(raf)cancelAnimationFrame(raf);raf=null;from=to=null;$('progress').style.width='0%';$('elapsed').textContent='0 / 24 s';$('phase').textContent='Simulation libre';document.querySelectorAll('[data-scenario]').forEach(b=>b.classList.remove('active'))}
 keys.forEach(k=>$(k).addEventListener('input',()=>{v[k]=+$(k).value;stop();update()}));
 document.querySelectorAll('[data-scenario]').forEach(b=>b.addEventListener('click',()=>run(b.dataset.scenario)));
-function run(key){if(raf)cancelAnimationFrame(raf);scenario=key;from={...v};to=scenarios[key];start=performance.now();paused=false;document.querySelectorAll('[data-scenario]').forEach(b=>b.classList.toggle('active',b.dataset.scenario===key));$('pause').textContent='Ⅱ Pause';
-function frame(now){if(!scenario)return;if(paused){raf=requestAnimationFrame(frame);return}let p=clamp((now-start)/24000),s=p*p*(3-2*p);keys.forEach(k=>v[k]=from[k]+(to[k]-from[k])*s);update();$('progress').style.width=(p*100)+'%';$('elapsed').textContent=Math.floor(p*24)+' / 24 s';$('phase').textContent=['Installation des conditions','Réponse des stomates','Modification des flux','Évolution des cellules'][Math.min(3,Math.floor(p*4))];if(p>=1){scenario=null;raf=null;$('phase').textContent='État final observé';$('pause').textContent='Ⅱ Pause';return}raf=requestAnimationFrame(frame)}
+function run(key){if(raf)cancelAnimationFrame(raf);raf=null;scenario=key;from={...v};to=scenarios[key];start=performance.now();paused=false;document.querySelectorAll('[data-scenario]').forEach(b=>b.classList.toggle('active',b.dataset.scenario===key));$('pause').textContent='Ⅱ Pause';
+function frame(now){if(!scenario)return;if(paused){raf=requestAnimationFrame(frame);return}let p=clamp((now-start)/24000),s=p*p*(3-2*p);keys.forEach(k=>v[k]=from[k]+(to[k]-from[k])*s);update();$('progress').style.width=(p*100)+'%';$('elapsed').textContent=Math.floor(p*24)+' / 24 s';$('phase').textContent=['Installation des conditions','Réponse des stomates','Modification des flux','Évolution des cellules'][Math.min(3,Math.floor(p*4))];if(p>=1){keys.forEach(k=>{v[k]=to[k];$(k).value=v[k]});update();scenario=null;raf=null;$('phase').textContent='État final observé';$('pause').textContent='Ⅱ Pause';return}raf=requestAnimationFrame(frame)}
 raf=requestAnimationFrame(frame)}
 $('pause').addEventListener('click',()=>{if(!scenario)return;if(!paused){paused=true;pauseTime=performance.now();$('pause').textContent='▶ Reprendre';$('phase').textContent='Expérience en pause'}else{start+=performance.now()-pauseTime;paused=false;$('pause').textContent='Ⅱ Pause'}});
 $('reset').addEventListener('click',()=>{stop();v={...initial};keys.forEach(k=>$(k).value=v[k]);update()});
