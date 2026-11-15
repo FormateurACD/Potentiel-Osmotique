@@ -103,7 +103,15 @@ svg text{font-family:system-ui,Arial,sans-serif}
 
 <section class="panel">
 <div class="eyebrow">05 · ÉCHELLE CELLULAIRE</div><h2>La cellule végétale</h2><div class="muted">Turgescence et plasmolyse</div>
-<svg viewBox="0 0 300 300" role="img" aria-label="Cellule végétale avec paroi, membrane et vacuole">
+<svg viewBox="0 0 300 300" role="img" aria-label="Cellule végétale : sens des échanges d'eau indiqué par des flèches">
+<defs>
+<marker id="waterArrowIn" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="#1686c2"/></marker>
+<marker id="waterArrowOut" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="#d97736"/></marker>
+</defs>
+<g id="waterFlowArrows" fill="none" stroke-width="3" stroke-linecap="round">
+<path id="waterArrowLeft" d="M4 160 L39 160" stroke="#1686c2" marker-end="url(#waterArrowIn)"/>
+<path id="waterArrowRight" d="M296 160 L261 160" stroke="#1686c2" marker-end="url(#waterArrowIn)"/>
+</g>
 <rect x="24" y="23" width="252" height="248" rx="39" fill="#b8a36c" fill-opacity=".18" stroke="#a98d50" stroke-width="10"/>
 <rect id="membrane" x="34" y="33" width="232" height="228" rx="31" fill="none" stroke="#5dba81" stroke-width="4"/>
 <rect id="vacuole" x="48" y="47" width="204" height="200" rx="29" fill="#7bbfe4" fill-opacity=".5" stroke="#5aa7d0" stroke-width="2"/>
@@ -113,6 +121,7 @@ svg text{font-family:system-ui,Arial,sans-serif}
 </svg>
 <div class="metric"><div class="rangehead"><span>Pression de turgescence</span><b id="turgorVal">95 %</b></div><div class="bar"><div id="turgorBar" style="width:95%"></div></div></div>
 <p class="muted" id="cellDescription">La vacuole est remplie d'eau et pousse la membrane contre la paroi.</p>
+<div class="metric"><div class="rangehead"><span>Flux net d'eau</span><b id="waterFlowLabel">→ Entrée d'eau</b></div><p class="muted" id="waterFlowDescription">L'eau entre dans la cellule : le milieu extérieur est hypotonique.</p></div>
 <div class="live-tonicity" aria-live="polite">
 <div class="eyebrow">LECTURE DU MILIEU ACTUEL</div>
 <div class="state" id="tonicityState">💧 Tendance hypotonique</div>
@@ -200,6 +209,11 @@ $('vacuole').setAttribute('x',24+inset);$('vacuole').setAttribute('y',23+inset);
 let mi=m.plasmolysis?Math.min(48,inset+18):10;$('membrane').setAttribute('x',24+mi);$('membrane').setAttribute('y',23+mi);$('membrane').setAttribute('width',252-2*mi);$('membrane').setAttribute('height',248-2*mi);$('membrane').setAttribute('rx',Math.max(8,39-mi*.5));
 $('cellLabel').textContent=m.plasmolysis?(m.turgor>20?'Plasmolyse':'Plasmolyse marquée'):m.turgor>75?'Cellule turgescente':m.turgor>40?'Perte de turgescence':'Cellule flasque';
 $('cellDescription').textContent=m.plasmolysis?'Le milieu extérieur est fortement concentré : la cellule perd de l’eau et la membrane plasmique se décolle de la paroi.':m.turgor>75?'La vacuole est remplie d’eau et pousse la membrane contre la paroi.':m.turgor>40?'La vacuole perd de l’eau. La pression de turgescence diminue : la cellule devient moins ferme, sans plasmolyse représentée.':'La cellule a perdu une grande partie de sa turgescence. Le flétrissement ne signifie pas nécessairement qu’une plasmolyse a lieu.';
+let flowIn=v.water>=60&&v.salt<=2,flowOut=m.plasmolysis||(v.water<25&&v.salt<8)||v.salt>=8;
+let left=$('waterArrowLeft'),right=$('waterArrowRight'),flowLabel=$('waterFlowLabel'),flowDesc=$('waterFlowDescription');
+if(flowIn){left.setAttribute('d','M4 160 L39 160');right.setAttribute('d','M296 160 L261 160');left.setAttribute('stroke','#1686c2');right.setAttribute('stroke','#1686c2');left.setAttribute('marker-end','url(#waterArrowIn)');right.setAttribute('marker-end','url(#waterArrowIn)');flowLabel.textContent='→ Entrée nette d’eau';flowDesc.textContent='L’eau entre dans la cellule : le milieu extérieur est relativement hypotonique et la cellule tend vers la turgescence.'}
+else if(flowOut){left.setAttribute('d','M39 160 L4 160');right.setAttribute('d','M261 160 L296 160');left.setAttribute('stroke','#d97736');right.setAttribute('stroke','#d97736');left.setAttribute('marker-end','url(#waterArrowOut)');right.setAttribute('marker-end','url(#waterArrowOut)');flowLabel.textContent='← Sortie nette d’eau';flowDesc.textContent=v.salt>=8?'L’eau tend à sortir de la cellule sous l’effet de la contrainte osmotique extérieure ; une plasmolyse est possible.':'La disponibilité en eau du sol est faible : la plante peut perdre de l’eau et sa turgescence diminue.'}
+else{left.setAttribute('d','M4 160 L39 160');right.setAttribute('d','M296 160 L261 160');left.setAttribute('stroke','#7b8790');right.setAttribute('stroke','#7b8790');left.setAttribute('marker-end','');right.setAttribute('marker-end','');flowLabel.textContent='↔ Pas de flux net marqué';flowDesc.textContent='L’eau entre et sort en permanence, mais les flux sont ici représentés comme globalement équilibrés : situation proche de l’isotonie.'}
 $('osmoticNotice').classList.toggle('hidden',v.salt<5);$('floodNotice').classList.toggle('hidden',!m.flood);
 if(v.salt>=5){$('explainTitle').textContent='🧂 Le problème du potentiel osmotique';$('explainText').textContent='Les sels dissous rendent le potentiel osmotique du sol plus négatif et abaissent son potentiel hydrique. L’eau se déplace d’un potentiel hydrique moins négatif vers un potentiel hydrique plus négatif. Si la solution extérieure est suffisamment concentrée, les cellules racinaires perdent de l’eau.'}
 else if(m.flood){$('explainTitle').textContent='🌊 Des racines asphyxiées';$('explainText').textContent='Les pores du sol sont saturés en eau. Le manque d’oxygène perturbe la respiration des racines, qui absorbent moins bien l’eau et les minéraux.'}
