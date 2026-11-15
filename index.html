@@ -23,6 +23,7 @@ button:hover,button.active{background:#e0f1e4;border-color:#398452}
 .progress{height:7px;border-radius:9px;background:#e5ece6;overflow:hidden;flex:1}.progress>div{height:100%;width:0;background:#398452;transition:width .2s}
 .panels{display:grid;grid-template-columns:1.12fr 1fr 1fr;gap:14px}
 .panel{min-width:0;margin:0 0 14px}.panel svg{width:100%;height:auto;display:block}
+.tonicity{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}.tonicity-card{background:#f1f6f1;border:1px solid #dce8dd;border-radius:10px;padding:10px;font-size:12px;line-height:1.45}.tonicity-card b{color:#285d3a}.tonicity-card p{margin:6px 0 0;color:#53695a}
 .metric{background:#f1f6f1;border-radius:9px;padding:9px;font-size:12px}
 .metric strong{display:block;font-size:19px;margin-top:3px}
 .metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
@@ -112,6 +113,12 @@ svg text{font-family:system-ui,Arial,sans-serif}
 </svg>
 <div class="metric"><div class="rangehead"><span>Pression de turgescence</span><b id="turgorVal">95 %</b></div><div class="bar"><div id="turgorBar" style="width:95%"></div></div></div>
 <p class="muted" id="cellDescription">La vacuole est remplie d'eau et pousse la membrane contre la paroi.</p>
+<div class="tonicity">
+<div class="tonicity-card"><b>💧 Milieu hypotonique</b><p>La solution extérieure est moins concentrée en solutés que le contenu cellulaire. Son potentiel hydrique est plus élevé : l'eau entre dans la cellule. La vacuole se gonfle et la cellule devient turgescente. La paroi limite son gonflement.</p></div>
+<div class="tonicity-card"><b>⚖️ Milieu isotonique</b><p>Les concentrations en solutés sont égales de part et d'autre de la membrane. Les échanges d'eau continuent, mais il n'y a pas de flux net. La cellule végétale perd sa turgescence et devient flasque.</p></div>
+<div class="tonicity-card"><b>🧂 Milieu hypertonique</b><p>La solution extérieure est plus concentrée en solutés. Son potentiel hydrique est plus faible : l'eau sort de la cellule. La vacuole se rétracte et, si la perte d'eau est suffisante, la membrane plasmique se décolle de la paroi : c'est la plasmolyse.</p></div>
+</div>
+<div class="note"><b>À retenir – sens des échanges d'eau</b><p>L'eau se déplace globalement du milieu où le potentiel hydrique est le plus élevé (le moins négatif) vers celui où il est le plus faible (le plus négatif). La tonicité décrit ici la comparaison des concentrations en solutés de part et d'autre de la membrane.</p></div>
 </section>
 </div>
 
@@ -134,7 +141,7 @@ svg text{font-family:system-ui,Arial,sans-serif}
 </div>
 <div id="topicInfo" class="note" aria-live="polite"><b>À toi d'explorer !</b><p>Sélectionne une structure pour découvrir son rôle dans la circulation de l'eau et le fonctionnement de la plante.</p></div>
 </section>
-<p class="muted" style="text-align:center">Modèle pédagogique qualitatif : les valeurs sont des indices relatifs, pas des mesures physiologiques ni des potentiels exprimés en MPa. La simulation ne prend pas en compte tous les facteurs (humidité de l’air, vent, nature du sol, espèce végétale).</p>
+<p class="muted" style="text-align:center">Modèle pédagogique qualitatif : les indices de fonctionnement sont relatifs et ne sont pas des mesures physiologiques. Le potentiel osmotique affiché est une estimation théorique pour une solution idéale de NaCl, pas une mesure du potentiel hydrique réel du sol. La simulation ne prend pas en compte tous les facteurs (humidité de l’air, vent, nature du sol, espèce végétale).</p>
 </main>
 
 <script>
