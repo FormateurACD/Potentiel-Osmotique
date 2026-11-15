@@ -38,7 +38,7 @@ svg text{font-family:system-ui,Arial,sans-serif}
 @keyframes sugar{from{transform:translateY(0)}to{transform:translateY(65px)}}
 @keyframes vapor{0%{opacity:0;transform:translateY(8px)}40%{opacity:1}100%{opacity:0;transform:translateY(-22px)}}
 @keyframes co2{0%{opacity:0;transform:translateY(-10px)}40%{opacity:1}100%{opacity:0;transform:translateY(12px)}}
-.hot{cursor:pointer}
+.hot{cursor:pointer;pointer-events:all;touch-action:manipulation;outline:none}.hot:focus text{ text-decoration:underline; paint-order:stroke; stroke:#fff; stroke-width:2px; stroke-linejoin:round }
 @media(max-width:850px){.panels{grid-template-columns:1fr 1fr}.panels .panel:first-child{grid-column:1/-1}}
 @media(max-width:600px){body{padding:10px}.controls{grid-template-columns:1fr 1fr;gap:14px}.panels{grid-template-columns:1fr}.panels .panel:first-child{grid-column:auto}.scenarios{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -78,9 +78,9 @@ svg text{font-family:system-ui,Arial,sans-serif}
 <g id="waterParticles" fill="#65d4ff"><circle class="waterParticle" cx="149" cy="198" r="3"/><circle class="waterParticle" cx="154" cy="178" r="3" style="animation-delay:-.8s"/><circle class="waterParticle" cx="148" cy="158" r="3" style="animation-delay:-1.5s"/><circle class="waterParticle" cx="152" cy="137" r="3" style="animation-delay:-2s"/><circle class="waterParticle" cx="150" cy="117" r="3" style="animation-delay:-.4s"/></g>
 <g id="sugarParticles" fill="#ffd34f"><circle class="sugarParticle" cx="145" cy="145" r="3"/><circle class="sugarParticle" cx="154" cy="148" r="3" style="animation-delay:-1s"/><circle class="sugarParticle" cx="149" cy="165" r="3" style="animation-delay:-2s"/><circle class="sugarParticle" cx="153" cy="183" r="3" style="animation-delay:-.7s"/></g>
 <g fill="white" font-size="10" font-weight="bold"><text x="9" y="225">SOL</text><text x="9" y="242">H₂O ↑</text><text x="197" y="194" fill="#ffe18a">Sucres ↓</text></g>
-<g class="hot" data-topic="racine"><text x="194" y="292" fill="white" font-size="11">Racines ⓘ</text><rect x="190" y="276" width="100" height="23" fill="transparent"/></g>
-<g class="hot" data-topic="xyleme"><text x="177" y="119" fill="#bceaff" font-size="10">Xylème ⓘ</text><rect x="130" y="110" width="110" height="20" fill="transparent"/></g>
-<g class="hot" data-topic="phloeme"><text x="177" y="137" fill="#ffe18a" font-size="10">Phloème ⓘ</text><rect x="130" y="130" width="110" height="20" fill="transparent"/></g>
+<g class="hot" data-topic="racine" tabindex="0" role="button" aria-label="Afficher le rôle des racines"><text x="194" y="292" fill="white" font-size="11">Racines ⓘ</text><rect x="190" y="276" width="100" height="23" fill="#ffffff" fill-opacity="0.001" pointer-events="all"/></g>
+<g class="hot" data-topic="xyleme" tabindex="0" role="button" aria-label="Afficher le rôle du xylème"><text x="177" y="119" fill="#bceaff" font-size="10">Xylème ⓘ</text><rect x="130" y="110" width="110" height="20" fill="#ffffff" fill-opacity="0.001" pointer-events="all"/></g>
+<g class="hot" data-topic="phloeme" tabindex="0" role="button" aria-label="Afficher le rôle du phloème"><text x="177" y="137" fill="#ffe18a" font-size="10">Phloème ⓘ</text><rect x="130" y="130" width="110" height="20" fill="#ffffff" fill-opacity="0.001" pointer-events="all"/></g>
 </svg>
 <div class="legend"><span><i class="dot" style="background:#55cafa"></i>Eau · xylème</span><span><i class="dot" style="background:#f7c94a"></i>Sucres · phloème</span></div>
 <div class="metrics"><div class="metric">Flux d'eau<strong id="waterFlow">82 %</strong></div><div class="metric">Production de sucres<strong id="sugarFlow">86 %</strong></div></div>
@@ -218,7 +218,7 @@ raf=requestAnimationFrame(frame)}
 $('pause').addEventListener('click',()=>{if(!scenario)return;if(!paused){paused=true;pauseTime=performance.now();$('pause').textContent='▶ Reprendre';$('phase').textContent='Expérience en pause'}else{start+=performance.now()-pauseTime;paused=false;$('pause').textContent='Ⅱ Pause'}});
 $('reset').addEventListener('click',()=>{stop();v={...initial};keys.forEach(k=>$(k).value=v[k]);update()});
 function showTopic(key){let d=info[key];if(!d)return;$('topicInfo').innerHTML='';let b=document.createElement('b'),p=document.createElement('p');b.textContent=d[0];p.textContent=d[1];p.className='muted';p.style.marginBottom='0';$('topicInfo').append(b,p)}
-document.querySelectorAll('[data-topic]').forEach(el=>el.addEventListener('click',()=>showTopic(el.dataset.topic)));
+document.querySelectorAll('[data-topic]').forEach(el=>{el.addEventListener('click',()=>showTopic(el.dataset.topic));el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showTopic(el.dataset.topic)}})});
 update();
 })();
 </script>
