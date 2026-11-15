@@ -21,7 +21,12 @@ button:hover,button.active{background:#e0f1e4;border-color:#398452}
 .scenarios button{min-height:48px}
 .progressline{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:12px;color:#65786b}
 .progress{height:7px;border-radius:9px;background:#e5ece6;overflow:hidden;flex:1}.progress>div{height:100%;width:0;background:#398452;transition:width .2s}
-.panels{display:grid;grid-template-columns:1.12fr 1fr 1fr;gap:14px}
+.panels{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto;gap:14px;align-items:start}
+.panels>.panel:nth-child(1){grid-column:1;grid-row:1}
+.panels>.panel:nth-child(2){grid-column:2;grid-row:1}
+.panels>.panel:nth-child(3){grid-column:3;grid-row:1 / span 2}
+.panels>.panel:nth-child(4){grid-column:1;grid-row:2}
+.panels>.panel:nth-child(5){grid-column:2;grid-row:2}
 .panel{min-width:0;margin:0 0 14px}.panel svg{width:100%;height:auto;display:block}
 .live-tonicity{margin:12px 0;padding:13px;border:1px solid #cbded0;border-radius:11px;background:#f4f8f4}.live-tonicity .state{font-size:18px;font-weight:800;color:#245b38;margin:4px 0}.live-tonicity p{font-size:13px;line-height:1.45;color:#53695a;margin:5px 0 0}.live-tonicity .eyebrow{margin-bottom:4px}.tonicity{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}.tonicity-card{background:#f1f6f1;border:1px solid #dce8dd;border-radius:10px;padding:10px;font-size:12px;line-height:1.45}.tonicity-card b{color:#285d3a}.tonicity-card p{margin:6px 0 0;color:#53695a}
 .metric{background:#f1f6f1;border-radius:9px;padding:9px;font-size:12px}
@@ -49,8 +54,8 @@ svg text{font-family:system-ui,Arial,sans-serif}
 @keyframes vapor{0%{opacity:0;transform:translateY(8px)}40%{opacity:1}100%{opacity:0;transform:translateY(-22px)}}
 @keyframes co2{0%{opacity:0;transform:translateY(-10px)}40%{opacity:1}100%{opacity:0;transform:translateY(12px)}}
 .hot{cursor:pointer;pointer-events:all;touch-action:manipulation;outline:none}.hot:focus text{ text-decoration:underline; paint-order:stroke; stroke:#fff; stroke-width:2px; stroke-linejoin:round }
-@media(max-width:850px){.panels{grid-template-columns:1fr 1fr}.panels .panel:first-child{grid-column:1/-1}}
-@media(max-width:600px){body{padding:10px}.controls{grid-template-columns:1fr 1fr;gap:14px}.panels{grid-template-columns:1fr}.panels .panel:first-child{grid-column:auto}.scenarios{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:850px){.panels{grid-template-columns:1fr 1fr;grid-template-rows:auto}.panels>.panel:nth-child(1),.panels>.panel:nth-child(2),.panels>.panel:nth-child(3),.panels>.panel:nth-child(4),.panels>.panel:nth-child(5){grid-column:auto;grid-row:auto}.panels>.panel:nth-child(3){grid-column:1/-1}}
+@media(max-width:600px){body{padding:10px}.controls{grid-template-columns:1fr 1fr;gap:14px}.panels{grid-template-columns:1fr}.panels>.panel:nth-child(1),.panels>.panel:nth-child(2),.panels>.panel:nth-child(3),.panels>.panel:nth-child(4),.panels>.panel:nth-child(5){grid-column:1;grid-row:auto}.scenarios{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
